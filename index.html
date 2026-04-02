@@ -306,14 +306,32 @@ function isDecorative(src) {
 }
 
 function extractImage(item) {
+  // 1. thumbnail
   if (item.thumbnail && !isDecorative(item.thumbnail)) return item.thumbnail.trim();
+  // 2. enclosure
   if (item.enclosure && item.enclosure.link && !isDecorative(item.enclosure.link)) return item.enclosure.link.trim();
+  // 3. Parse content/description HTML via DOM (works when full content is available)
   for (const field of ['content', 'description']) {
     if (item[field]) {
       const tmp = document.createElement('div');
       tmp.innerHTML = item[field];
       for (const img of tmp.querySelectorAll('img')) {
         if (img.src && !isDecorative(img.src)) return img.src;
+      }
+    }
+  }
+  // 4. Regex fallback — extract src from raw HTML string directly
+  // rss2json sometimes truncates the DOM but leaves raw HTML intact
+  for (const field of ['content', 'description']) {
+    if (item[field]) {
+      const matches = [...item[field].matchAll(/src="(https?:\/\/[^"]+)"/g)];
+      for (const m of matches) {
+        if (!isDecorative(m[1])) return m[1];
+      }
+      // Also try single quotes
+      const matchesSq = [...item[field].matchAll(/src='(https?:\/\/[^']+)'/g)];
+      for (const m of matchesSq) {
+        if (!isDecorative(m[1])) return m[1];
       }
     }
   }
