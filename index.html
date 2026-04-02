@@ -280,24 +280,69 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 
 <script>
 
+function isDecorative(src) {
+  if (!src) return true;
+
+  // 1. Known file hashes — Substack UI assets always present on every page
+  const skipFiles = [
+    'c0d17ae6-ab2b-49ab-b92e-fd0ee9d33973', // Professional Turista publication logo
+    '72816ac0-e1d8-42db-9d8e-8094ca7f083f', // Sophie's profile photo
+  ];
+
+  // 2. Known decorative patterns in the URL
+  const skipPatterns = [
+    '1450x140',      // Substack thin decorative separator banner
+    'w_40,h_40',     // tiny UI images (publication logo in nav)
+    'w_36,h_36',     // author avatar
+    'w_32,h_32',     // commenter avatars
+    'w_88,h_88',     // small logo variant
+    'c_fill',        // any avatar crop
+    'avatars',       // Substack avatars folder
+  ];
+
+  if (skipFiles.some(s => src.includes(s))) return true;
+  if (skipPatterns.some(s => src.includes(s))) return true;
+
+  // 3. Skip very wide & short images (screenshots, maps, UI captures)
+  // Detect from URL dimensions like _2940x1528 or _1836x804
+  const dimMatch = src.match(/_([0-9]+)x([0-9]+)\./);
+  if (dimMatch) {
+    const w = parseInt(dimMatch[1]);
+    const h = parseInt(dimMatch[2]);
+    const ratio = w / h;
+    // Skip if extremely wide (ratio > 3) — decorative banners & UI screenshots
+    if (ratio > 3) return true;
+  }
+
+  return false;
+}
+
 function extractImage(item) {
-  // 1. thumbnail
-  if (item.thumbnail && item.thumbnail.trim()) return item.thumbnail.trim();
+  // 1. thumbnail — only if it looks like a real content image
+  if (item.thumbnail && item.thumbnail.trim() && !isDecorative(item.thumbnail)) {
+    return item.thumbnail.trim();
+  }
   // 2. enclosure
-  if (item.enclosure && item.enclosure.link && item.enclosure.link.trim()) return item.enclosure.link.trim();
-  // 3. first <img> in content HTML
+  if (item.enclosure && item.enclosure.link && !isDecorative(item.enclosure.link)) {
+    return item.enclosure.link.trim();
+  }
+  // 3. first non-decorative <img> in content HTML
   if (item.content) {
     const tmp = document.createElement('div');
     tmp.innerHTML = item.content;
-    const img = tmp.querySelector('img');
-    if (img && img.src) return img.src;
+    const imgs = tmp.querySelectorAll('img');
+    for (const img of imgs) {
+      if (img.src && !isDecorative(img.src)) return img.src;
+    }
   }
-  // 4. first <img> in description
+  // 4. first non-decorative <img> in description
   if (item.description) {
     const tmp = document.createElement('div');
     tmp.innerHTML = item.description;
-    const img = tmp.querySelector('img');
-    if (img && img.src) return img.src;
+    const imgs = tmp.querySelectorAll('img');
+    for (const img of imgs) {
+      if (img.src && !isDecorative(img.src)) return img.src;
+    }
   }
   return '';
 }
