@@ -286,97 +286,99 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 </footer>
 
 <script>
-const SUBSTACK_API_KEY = 'sk_live_5c5f9ddcf6be45688f9f121884ebfe5f';
-const PUBLICATION_URL = 'professionalturista.substack.com';
-
 function stripHtml(html) {
   const tmp = document.createElement('div');
   tmp.innerHTML = html;
   return tmp.textContent || tmp.innerText || '';
 }
 
-function getImage(post) {
-  // substackapi.dev gives us clean cover_image with multiple sizes
-  if (post.cover_image) {
-    return post.cover_image.large || post.cover_image.medium || post.cover_image.small || post.cover_image.original || '';
-  }
-  return '';
-}
-
 function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
 }
 
-async function loadSubstackPosts() {
+function renderFeatured(post) {
+  const img = post.cover_image || '';
+  const featuredImgEl = document.getElementById('featured-img');
+  if (img) {
+    featuredImgEl.src = img;
+    featuredImgEl.onerror = () => { featuredImgEl.style.display = 'none'; };
+  } else {
+    featuredImgEl.style.display = 'none';
+  }
+  const url = post.canonical_url || 'https://professionalturista.substack.com/p/' + post.slug;
+  document.getElementById('featured-link').href = url;
+  document.getElementById('featured-title').textContent = post.title || '';
+  document.getElementById('featured-subtitle').textContent = post.subtitle || '';
+  document.getElementById('featured-date').textContent = formatDate(post.post_date);
+  document.getElementById('featured-excerpt').textContent =
+    stripHtml(post.truncated_body_text || post.subtitle || '').slice(0, 300) + '...';
+}
+
+function renderCards(posts) {
   const container = document.getElementById('posts-container');
+  container.innerHTML = posts.map(post => {
+    const src = post.cover_image || '';
+    const url = post.canonical_url || 'https://professionalturista.substack.com/p/' + post.slug;
+    return '<a class="post-card" href="' + url + '" target="_blank">' +
+      '<div class="post-thumb">' + (src
+        ? '<img src="' + src + '" alt="' + post.title + '" onerror="this.style.display='none'" />'
+        : '<div class="post-thumb-placeholder">Professional Turista</div>'
+      ) + '</div>' +
+      '<div class="post-body">' +
+        '<p class="post-tag">Professional Turista</p>' +
+        '<p class="post-title">' + post.title + '</p>' +
+        '<p class="post-date">' + formatDate(post.post_date) + '</p>' +
+        '<p class="post-read">Read</p>' +
+      '</div></a>';
+  }).join('');
+}
+
+function renderError() {
+  document.getElementById('featured-title').textContent = 'Read the latest on Substack';
+  document.getElementById('featured-subtitle').textContent = '';
+  document.getElementById('featured-date').textContent = '';
+  document.getElementById('featured-excerpt').textContent = 'Visit Professional Turista on Substack to discover all the latest posts.';
+  document.getElementById('featured-link').href = 'https://professionalturista.substack.com';
+  document.getElementById('featured-img').style.display = 'none';
+  document.getElementById('posts-container').innerHTML =
+    '<div class="posts-loading"><a href="https://professionalturista.substack.com" target="_blank" style="color:var(--rose);text-decoration:none;letter-spacing:0.1em;font-size:13px;text-transform:uppercase;">View all posts on Substack \u2192</a></div>';
+}
+
+async function loadSubstackPosts() {
   try {
-    const url = `https://api.substackapi.dev/posts/latest?publication_url=${encodeURIComponent(PUBLICATION_URL)}&limit=5`;
-    const res = await fetch(url, {
-      headers: { 'X-API-Key': SUBSTACK_API_KEY }
-    });
-    if (!res.ok) throw new Error(`API error: ${res.status}`);
-    const json = await res.json();
-    const posts = json.data || json;
+    const res = await fetch('https://professionalturista.substack.com/api/v1/posts?limit=5&offset=0');
+    if (!res.ok) throw new Error('Substack API ' + res.status);
+    const posts = await res.json();
     if (!posts || !posts.length) throw new Error('no posts');
-
-    // FEATURED: first post
-    const first = posts[0];
-    const featuredSrc = getImage(first);
-    const featuredImgEl = document.getElementById('featured-img');
-    if (featuredSrc) {
-      featuredImgEl.src = featuredSrc;
-      featuredImgEl.onerror = () => { featuredImgEl.style.display = 'none'; };
-    } else {
-      featuredImgEl.style.display = 'none';
-    }
-    document.getElementById('featured-link').href = first.url;
-    document.getElementById('featured-title').textContent = first.title;
-    document.getElementById('featured-subtitle').textContent = first.subtitle || '';
-    document.getElementById('featured-date').textContent = formatDate(first.date);
-    document.getElementById('featured-excerpt').textContent = first.excerpt
-      ? stripHtml(first.excerpt).slice(0, 300) + '...'
-      : stripHtml(first.description || '').slice(0, 300) + '...';
-
-    // CARDS: posts 2-4
-    container.innerHTML = posts.slice(1, 4).map(post => {
-      const src = getImage(post);
-      return `<a class="post-card" href="${post.url}" target="_blank">
-        <div class="post-thumb">${src
-          ? `<img src="${src}" alt="${post.title}" onerror="this.style.display='none'" />`
-          : `<div class="post-thumb-placeholder">Professional Turista</div>`
-        }</div>
-        <div class="post-body">
-          <p class="post-tag">Professional Turista</p>
-          <p class="post-title">${post.title}</p>
-          <p class="post-date">${formatDate(post.date)}</p>
-          <p class="post-read">Read</p>
-        </div>
-      </a>`;
-    }).join('');
-
+    renderFeatured(posts[0]);
+    renderCards(posts.slice(1, 4));
   } catch(e) {
-    console.warn('substackapi.dev failed, using fallback:', e);
-    document.getElementById('featured-title').textContent = 'January “Luxury Around the World” Roundup';
-    document.getElementById('featured-subtitle').textContent = "January 2026: What’s happening at the crossroads of travel and luxury?";
-    document.getElementById('featured-date').textContent = '4 February 2026';
-    document.getElementById('featured-excerpt').textContent = 'In this first edition of a new monthly series bringing together two of my favourite worlds, travel and luxury, I am hoping to shine a bit of light on some of the coolest experiences taking place in all different corners of our world...';
-    document.getElementById('featured-link').href = 'https://professionalturista.substack.com/p/january-luxury-around-the-world-roundup';
-    document.getElementById('featured-img').src = 'https://substackcdn.com/image/fetch/w_800,c_limit,f_auto,q_auto:good/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F9c54823c-c85c-46f4-9483-1ad8dc873688_3024x2190.jpeg';
-    container.innerHTML = `
-      <a class="post-card" href="https://professionalturista.substack.com/p/the-joy-of-being-a-tourist-in-your" target="_blank">
-        <div class="post-thumb"><img src="https://substackcdn.com/image/fetch/w_600,c_limit,f_auto,q_auto:good/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff8b6e078-321f-4dcf-8132-9d9eaaf8bffc_3024x3104.jpeg" alt="" /></div>
-        <div class="post-body"><p class="post-tag">Paris Life</p><p class="post-title">The Joy of Being a Tourist in Your Own City</p><p class="post-date">15 September 2025</p><p class="post-read">Read</p></div>
-      </a>
-      <a class="post-card" href="https://professionalturista.substack.com/p/summer-escapes-5-waterside-getaways" target="_blank">
-        <div class="post-thumb"><div class="post-thumb-placeholder">Professional Turista</div></div>
-        <div class="post-body"><p class="post-tag">City Guide</p><p class="post-title">Summer Escapes: 5 Waterside Getaways from Milan</p><p class="post-date">17 March 2025</p><p class="post-read">Read</p></div>
-      </a>
-      <a class="post-card" href="https://professionalturista.substack.com/p/a-few-current-favourites-toronto" target="_blank">
-        <div class="post-thumb"><div class="post-thumb-placeholder">Professional Turista</div></div>
-        <div class="post-body"><p class="post-tag">City Guide</p><p class="post-title">A Few Current Favourites: Toronto Edition</p><p class="post-date">24 March 2025</p><p class="post-read">Read</p></div>
-      </a>`;
+    console.warn('Substack API failed, trying RSS:', e.message);
+    try {
+      const rssUrl = encodeURIComponent('https://professionalturista.substack.com/feed');
+      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + rssUrl + '&count=5');
+      const data = await res.json();
+      if (!data.items || !data.items.length) throw new Error('no rss');
+      const posts = data.items.map(function(item) {
+        return {
+          title: item.title,
+          subtitle: stripHtml(item.description || '').slice(0, 120),
+          slug: (item.link.split('/p/')[1] || '').split('?')[0],
+          canonical_url: item.link,
+          post_date: item.pubDate,
+          cover_image: item.thumbnail || '',
+          truncated_body_text: item.description || ''
+        };
+      });
+      renderFeatured(posts[0]);
+      renderCards(posts.slice(1, 4));
+    } catch(e2) {
+      console.warn('RSS also failed:', e2.message);
+      renderError();
+    }
   }
 }
+
 loadSubstackPosts();
 </script>
 </body>
