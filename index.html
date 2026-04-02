@@ -296,38 +296,73 @@ function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
 }
 
-function renderFeatured(post) {
-  const img = post.cover_image || '';
-  const featuredImgEl = document.getElementById('featured-img');
+function isDecorative(src) {
+  if (!src) return true;
+  const skipFiles = [
+    'c0d17ae6-ab2b-49ab-b92e-fd0ee9d33973',
+    '72816ac0-e1d8-42db-9d8e-8094ca7f083f',
+  ];
+  const skipPatterns = ['1450x140','w_40,h_40','w_36,h_36','w_32,h_32','w_88,h_88','c_fill','avatars'];
+  if (skipFiles.some(function(s){return src.includes(s);})) return true;
+  if (skipPatterns.some(function(s){return src.includes(s);})) return true;
+  var dimMatch = src.match(/_([0-9]+)x([0-9]+)\./);
+  if (dimMatch && parseInt(dimMatch[1]) / parseInt(dimMatch[2]) > 3) return true;
+  return false;
+}
+
+function extractImage(item) {
+  if (item.thumbnail && !isDecorative(item.thumbnail)) return item.thumbnail;
+  if (item.enclosure && item.enclosure.link && !isDecorative(item.enclosure.link)) return item.enclosure.link;
+  var fields = ['content', 'description'];
+  for (var f = 0; f < fields.length; f++) {
+    if (item[fields[f]]) {
+      var tmp = document.createElement('div');
+      tmp.innerHTML = item[fields[f]];
+      var imgs = tmp.querySelectorAll('img');
+      for (var i = 0; i < imgs.length; i++) {
+        if (imgs[i].src && !isDecorative(imgs[i].src)) return imgs[i].src;
+      }
+      var matches = item[fields[f]].match(/src="(https?:\/\/[^"]+)"/g);
+      if (matches) {
+        for (var m = 0; m < matches.length; m++) {
+          var url = matches[m].replace(/src="|"/g,'');
+          if (!isDecorative(url)) return url;
+        }
+      }
+    }
+  }
+  return '';
+}
+
+function renderFeatured(title, subtitle, date, excerpt, url, img) {
+  var featuredImgEl = document.getElementById('featured-img');
   if (img) {
     featuredImgEl.src = img;
-    featuredImgEl.onerror = () => { featuredImgEl.style.display = 'none'; };
+    featuredImgEl.onerror = function() { featuredImgEl.style.display = 'none'; };
   } else {
     featuredImgEl.style.display = 'none';
   }
-  const url = post.canonical_url || 'https://professionalturista.substack.com/p/' + post.slug;
   document.getElementById('featured-link').href = url;
-  document.getElementById('featured-title').textContent = post.title || '';
-  document.getElementById('featured-subtitle').textContent = post.subtitle || '';
-  document.getElementById('featured-date').textContent = formatDate(post.post_date);
-  document.getElementById('featured-excerpt').textContent =
-    stripHtml(post.truncated_body_text || post.subtitle || '').slice(0, 300) + '...';
+  document.getElementById('featured-title').textContent = title;
+  document.getElementById('featured-subtitle').textContent = subtitle;
+  document.getElementById('featured-date').textContent = date;
+  document.getElementById('featured-excerpt').textContent = excerpt;
 }
 
-function renderCards(posts) {
-  const container = document.getElementById('posts-container');
-  container.innerHTML = posts.map(post => {
-    const src = post.cover_image || '';
-    const url = post.canonical_url || 'https://professionalturista.substack.com/p/' + post.slug;
-    return '<a class="post-card" href="' + url + '" target="_blank">' +
+function renderCards(items) {
+  var container = document.getElementById('posts-container');
+  container.innerHTML = items.map(function(item) {
+    var src = extractImage(item);
+    var date = new Date(item.pubDate).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+    return '<a class="post-card" href="' + item.link + '" target="_blank">' +
       '<div class="post-thumb">' + (src
-        ? '<img src="' + src + '" alt="' + post.title + '" onerror="this.style.display='none'" />'
+        ? '<img src="' + src + '" alt="' + item.title + '" onerror="this.style.display=\'none\'" />'
         : '<div class="post-thumb-placeholder">Professional Turista</div>'
       ) + '</div>' +
       '<div class="post-body">' +
         '<p class="post-tag">Professional Turista</p>' +
-        '<p class="post-title">' + post.title + '</p>' +
-        '<p class="post-date">' + formatDate(post.post_date) + '</p>' +
+        '<p class="post-title">' + item.title + '</p>' +
+        '<p class="post-date">' + date + '</p>' +
         '<p class="post-read">Read</p>' +
       '</div></a>';
   }).join('');
@@ -335,47 +370,34 @@ function renderCards(posts) {
 
 function renderError() {
   document.getElementById('featured-title').textContent = 'Read the latest on Substack';
+  document.getElementById('featured-img').style.display = 'none';
   document.getElementById('featured-subtitle').textContent = '';
   document.getElementById('featured-date').textContent = '';
   document.getElementById('featured-excerpt').textContent = 'Visit Professional Turista on Substack to discover all the latest posts.';
   document.getElementById('featured-link').href = 'https://professionalturista.substack.com';
-  document.getElementById('featured-img').style.display = 'none';
   document.getElementById('posts-container').innerHTML =
     '<div class="posts-loading"><a href="https://professionalturista.substack.com" target="_blank" style="color:var(--rose);text-decoration:none;letter-spacing:0.1em;font-size:13px;text-transform:uppercase;">View all posts on Substack \u2192</a></div>';
 }
 
 async function loadSubstackPosts() {
   try {
-    const res = await fetch('https://professionalturista.substack.com/api/v1/posts?limit=5&offset=0');
-    if (!res.ok) throw new Error('Substack API ' + res.status);
-    const posts = await res.json();
-    if (!posts || !posts.length) throw new Error('no posts');
-    renderFeatured(posts[0]);
-    renderCards(posts.slice(1, 4));
+    var rssUrl = encodeURIComponent('https://professionalturista.substack.com/feed');
+    var res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + rssUrl + '&count=5');
+    if (!res.ok) throw new Error('rss2json ' + res.status);
+    var data = await res.json();
+    if (!data.items || !data.items.length) throw new Error('no items');
+
+    var first = data.items[0];
+    var img = extractImage(first);
+    var date = new Date(first.pubDate).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+    var excerpt = stripHtml(first.content || first.description || '').replace(/\s+/g,' ').trim().slice(0,300) + '...';
+    var subtitle = stripHtml(first.description || '').trim().slice(0,120);
+    renderFeatured(first.title, subtitle, date, excerpt, first.link, img);
+    renderCards(data.items.slice(1,4));
+
   } catch(e) {
-    console.warn('Substack API failed, trying RSS:', e.message);
-    try {
-      const rssUrl = encodeURIComponent('https://professionalturista.substack.com/feed');
-      const res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + rssUrl + '&count=5');
-      const data = await res.json();
-      if (!data.items || !data.items.length) throw new Error('no rss');
-      const posts = data.items.map(function(item) {
-        return {
-          title: item.title,
-          subtitle: stripHtml(item.description || '').slice(0, 120),
-          slug: (item.link.split('/p/')[1] || '').split('?')[0],
-          canonical_url: item.link,
-          post_date: item.pubDate,
-          cover_image: item.thumbnail || '',
-          truncated_body_text: item.description || ''
-        };
-      });
-      renderFeatured(posts[0]);
-      renderCards(posts.slice(1, 4));
-    } catch(e2) {
-      console.warn('RSS also failed:', e2.message);
-      renderError();
-    }
+    console.warn('RSS failed:', e.message);
+    renderError();
   }
 }
 
