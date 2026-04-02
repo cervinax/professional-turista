@@ -286,57 +286,8 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 </footer>
 
 <script>
-function isDecorative(src) {
-  if (!src) return true;
-  const skipFiles = [
-    'c0d17ae6-ab2b-49ab-b92e-fd0ee9d33973',
-    '72816ac0-e1d8-42db-9d8e-8094ca7f083f',
-  ];
-  const skipPatterns = [
-    '1450x140', 'w_40,h_40', 'w_36,h_36', 'w_32,h_32', 'w_88,h_88', 'c_fill', 'avatars',
-  ];
-  if (skipFiles.some(s => src.includes(s))) return true;
-  if (skipPatterns.some(s => src.includes(s))) return true;
-  const dimMatch = src.match(/_([0-9]+)x([0-9]+)\./);
-  if (dimMatch) {
-    const ratio = parseInt(dimMatch[1]) / parseInt(dimMatch[2]);
-    if (ratio > 3) return true;
-  }
-  return false;
-}
-
-function extractImage(item) {
-  // 1. thumbnail
-  if (item.thumbnail && !isDecorative(item.thumbnail)) return item.thumbnail.trim();
-  // 2. enclosure
-  if (item.enclosure && item.enclosure.link && !isDecorative(item.enclosure.link)) return item.enclosure.link.trim();
-  // 3. Parse content/description HTML via DOM (works when full content is available)
-  for (const field of ['content', 'description']) {
-    if (item[field]) {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = item[field];
-      for (const img of tmp.querySelectorAll('img')) {
-        if (img.src && !isDecorative(img.src)) return img.src;
-      }
-    }
-  }
-  // 4. Regex fallback — extract src from raw HTML string directly
-  // rss2json sometimes truncates the DOM but leaves raw HTML intact
-  for (const field of ['content', 'description']) {
-    if (item[field]) {
-      const matches = [...item[field].matchAll(/src="(https?:\/\/[^"]+)"/g)];
-      for (const m of matches) {
-        if (!isDecorative(m[1])) return m[1];
-      }
-      // Also try single quotes
-      const matchesSq = [...item[field].matchAll(/src='(https?:\/\/[^']+)'/g)];
-      for (const m of matchesSq) {
-        if (!isDecorative(m[1])) return m[1];
-      }
-    }
-  }
-  return '';
-}
+const SUBSTACK_API_KEY = 'sk_live_5c5f9ddcf6be45688f9f121884ebfe5f';
+const PUBLICATION_URL = 'professionalturista.substack.com';
 
 function stripHtml(html) {
   const tmp = document.createElement('div');
@@ -344,42 +295,69 @@ function stripHtml(html) {
   return tmp.textContent || tmp.innerText || '';
 }
 
+function getImage(post) {
+  // substackapi.dev gives us clean cover_image with multiple sizes
+  if (post.cover_image) {
+    return post.cover_image.large || post.cover_image.medium || post.cover_image.small || post.cover_image.original || '';
+  }
+  return '';
+}
+
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
+}
+
 async function loadSubstackPosts() {
   const container = document.getElementById('posts-container');
   try {
-    const api = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent('https://professionalturista.substack.com/feed')}&count=5`;
-    const res = await fetch(api);
-    const data = await res.json();
-    if (!data.items || !data.items.length) throw new Error('no items');
+    const url = `https://api.substackapi.dev/posts/latest?publication_url=${encodeURIComponent(PUBLICATION_URL)}&limit=5`;
+    const res = await fetch(url, {
+      headers: { 'X-API-Key': SUBSTACK_API_KEY }
+    });
+    if (!res.ok) throw new Error(`API error: ${res.status}`);
+    const json = await res.json();
+    const posts = json.data || json;
+    if (!posts || !posts.length) throw new Error('no posts');
 
-    const first = data.items[0];
-    const featuredSrc = extractImage(first);
+    // FEATURED: first post
+    const first = posts[0];
+    const featuredSrc = getImage(first);
     const featuredImgEl = document.getElementById('featured-img');
-    if (featuredSrc) { featuredImgEl.src = featuredSrc; featuredImgEl.onerror = () => { featuredImgEl.style.display='none'; }; }
-    else { featuredImgEl.style.display = 'none'; }
-    document.getElementById('featured-link').href = first.link;
+    if (featuredSrc) {
+      featuredImgEl.src = featuredSrc;
+      featuredImgEl.onerror = () => { featuredImgEl.style.display = 'none'; };
+    } else {
+      featuredImgEl.style.display = 'none';
+    }
+    document.getElementById('featured-link').href = first.url;
     document.getElementById('featured-title').textContent = first.title;
-    document.getElementById('featured-subtitle').textContent = stripHtml(first.description || '').trim().slice(0, 120);
-    document.getElementById('featured-date').textContent = new Date(first.pubDate).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
-    document.getElementById('featured-excerpt').textContent = stripHtml(first.content || first.description || '').replace(/\s+/g,' ').trim().slice(0, 300) + '...';
+    document.getElementById('featured-subtitle').textContent = first.subtitle || '';
+    document.getElementById('featured-date').textContent = formatDate(first.date);
+    document.getElementById('featured-excerpt').textContent = first.excerpt
+      ? stripHtml(first.excerpt).slice(0, 300) + '...'
+      : stripHtml(first.description || '').slice(0, 300) + '...';
 
-    container.innerHTML = data.items.slice(1, 4).map(item => {
-      const date = new Date(item.pubDate).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
-      const src = extractImage(item);
-      return `<a class="post-card" href="${item.link}" target="_blank">
-        <div class="post-thumb">${src ? `<img src="${src}" alt="${item.title}" onerror="this.style.display='none'" />` : `<div class="post-thumb-placeholder">Professional Turista</div>`}</div>
+    // CARDS: posts 2-4
+    container.innerHTML = posts.slice(1, 4).map(post => {
+      const src = getImage(post);
+      return `<a class="post-card" href="${post.url}" target="_blank">
+        <div class="post-thumb">${src
+          ? `<img src="${src}" alt="${post.title}" onerror="this.style.display='none'" />`
+          : `<div class="post-thumb-placeholder">Professional Turista</div>`
+        }</div>
         <div class="post-body">
           <p class="post-tag">Professional Turista</p>
-          <p class="post-title">${item.title}</p>
-          <p class="post-date">${date}</p>
+          <p class="post-title">${post.title}</p>
+          <p class="post-date">${formatDate(post.date)}</p>
           <p class="post-read">Read</p>
         </div>
       </a>`;
     }).join('');
 
   } catch(e) {
-    document.getElementById('featured-title').textContent = 'January \u201cLuxury Around the World\u201d Roundup';
-    document.getElementById('featured-subtitle').textContent = "January 2026: What\u2019s happening at the crossroads of travel and luxury?";
+    console.warn('substackapi.dev failed, using fallback:', e);
+    document.getElementById('featured-title').textContent = 'January “Luxury Around the World” Roundup';
+    document.getElementById('featured-subtitle').textContent = "January 2026: What’s happening at the crossroads of travel and luxury?";
     document.getElementById('featured-date').textContent = '4 February 2026';
     document.getElementById('featured-excerpt').textContent = 'In this first edition of a new monthly series bringing together two of my favourite worlds, travel and luxury, I am hoping to shine a bit of light on some of the coolest experiences taking place in all different corners of our world...';
     document.getElementById('featured-link').href = 'https://professionalturista.substack.com/p/january-luxury-around-the-world-roundup';
