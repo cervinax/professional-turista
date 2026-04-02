@@ -394,59 +394,9 @@ function renderError() {
     '</a>';
 }
 
-async function loadSubstackPosts() {
-  try {
-    // Use allorigins.win as CORS proxy to fetch the RSS feed directly
-    var feedUrl = 'https://professionalturista.substack.com/feed';
-    var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(feedUrl);
-    var res = await fetch(proxyUrl);
-    if (!res.ok) throw new Error('proxy ' + res.status);
-    var json = await res.json();
-    if (!json.contents) throw new Error('no contents');
-
-    // Parse XML
-    var parser = new DOMParser();
-    var xml = parser.parseFromString(json.contents, 'text/xml');
-    var items = Array.from(xml.querySelectorAll('item'));
-    if (!items.length) throw new Error('no items');
-
-    function getField(item, tag) {
-      var el = item.querySelector(tag);
-      return el ? el.textContent : '';
-    }
-
-    function getContent(item) {
-      // content:encoded has the full HTML
-      var encoded = item.getElementsByTagNameNS('*', 'encoded')[0];
-      return encoded ? encoded.textContent : getField(item, 'description');
-    }
-
-    var mapped = items.slice(0, 5).map(function(item) {
-      return {
-        title: getField(item, 'title'),
-        link: getField(item, 'link'),
-        pubDate: getField(item, 'pubDate'),
-        description: getField(item, 'description'),
-        thumbnail: getField(item, 'media\\:thumbnail') || getField(item, 'enclosure'),
-        content: getContent(item)
-      };
-    });
-
-    var first = mapped[0];
-    var img = extractImage(first);
-    var date = new Date(first.pubDate).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
-    var excerpt = stripHtml(first.content || first.description || '').replace(/\s+/g,' ').trim().slice(0,300) + '...';
-    var subtitle = stripHtml(first.description || '').trim().slice(0,120);
-    renderFeatured(first.title, subtitle, date, excerpt, first.link, img);
-    renderCards(mapped.slice(1,4));
-
-  } catch(e) {
-    console.warn('RSS failed:', e.message);
-    renderError();
-  }
-}
-
-loadSubstackPosts();
+// Hardcoded for now — dynamic RSS disabled on GitHub Pages (CORS).
+// Update manually when Sophie publishes. TODO: migrate to Netlify.
+renderError();
 </script>
 </body>
 </html>
