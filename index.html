@@ -272,10 +272,18 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
       <div class="footer-contact">
         <h4>Get in <em>touch</em></h4>
         <p>Have a collaboration in mind? Drop me a message.</p>
-        <div class="contact-form">
-          <input type="email" placeholder="your@email.com" />
-          <a href="mailto:sophieenygren@gmail.com" class="btn btn-solid" style="font-size:10px;padding:12px 20px;white-space:nowrap;">Send</a>
-        </div>
+        <form name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" id="contact-form">
+          <input type="hidden" name="form-name" value="contact" />
+          <p style="display:none;"><input name="bot-field" /></p>
+          <div class="contact-form">
+            <input type="email" name="email" placeholder="your@email.com" required />
+            <button type="submit" class="btn btn-solid" style="font-size:10px;padding:12px 20px;white-space:nowrap;cursor:pointer;border:none;">Send</button>
+          </div>
+          <div style="margin-top:8px;">
+            <input type="text" name="message" placeholder="Your message..." style="width:100%;padding:12px 16px;background:#2a2320;border:1px solid #3a3330;color:var(--warm-white);font-family:'Jost',sans-serif;font-size:13px;outline:none;" />
+          </div>
+          <p id="form-success" style="display:none;color:var(--rose-light);font-size:13px;margin-top:8px;letter-spacing:0.05em;">Message sent — thank you!</p>
+        </form>
       </div>
     </div>
     <div class="footer-bottom">
@@ -427,6 +435,23 @@ async function loadSubstackPosts() {
 }
 
 loadSubstackPosts();
+
+// Netlify Form submission handler
+var form = document.getElementById('contact-form');
+if (form) {
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var data = new FormData(form);
+    fetch('/', { method: 'POST', body: data })
+      .then(function() {
+        document.getElementById('form-success').style.display = 'block';
+        form.reset();
+      })
+      .catch(function() {
+        alert('Something went wrong. Please try again.');
+      });
+  });
+}
 </script>
 </body>
 </html>
