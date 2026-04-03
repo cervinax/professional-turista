@@ -394,9 +394,29 @@ function renderError() {
     '</a>';
 }
 
-// Hardcoded for now — dynamic RSS disabled on GitHub Pages (CORS).
-// Update manually when Sophie publishes. TODO: migrate to Netlify.
-renderError();
+async function loadSubstackPosts() {
+  try {
+    var rssUrl = encodeURIComponent('https://professionalturista.substack.com/feed');
+    var res = await fetch('https://api.rss2json.com/v1/api.json?rss_url=' + rssUrl + '&count=5');
+    if (!res.ok) throw new Error('rss2json ' + res.status);
+    var data = await res.json();
+    if (!data.items || !data.items.length) throw new Error('no items');
+
+    var first = data.items[0];
+    var img = extractImage(first);
+    var date = new Date(first.pubDate).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
+    var excerpt = stripHtml(first.content || first.description || '').replace(/\s+/g,' ').trim().slice(0,300) + '...';
+    var subtitle = stripHtml(first.description || '').trim().slice(0,120);
+    renderFeatured(first.title, subtitle, date, excerpt, first.link, img);
+    renderCards(data.items.slice(1,4));
+
+  } catch(e) {
+    console.warn('RSS failed:', e.message);
+    renderError();
+  }
+}
+
+loadSubstackPosts();
 </script>
 </body>
 </html>
