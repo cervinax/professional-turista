@@ -221,6 +221,15 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 
     <div style="text-align:center;margin-top:3rem;">
       <a href="https://professionalturista.substack.com" target="_blank" class="btn btn-dark">View all posts on Substack</a>
+      <div style="margin-top:1rem;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+          <div style="display:flex;align-items:center;gap:12px;max-width:420px;width:100%;">
+            <input type="email" id="sub-email" placeholder="your@email.com" style="flex:1;padding:13px 16px;border:1px solid var(--border);font-family:'Jost',sans-serif;font-size:13px;outline:none;color:var(--ink);background:white;" />
+            <button onclick="subscribeSubstack()" style="padding:13px 28px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;font-family:'Jost',sans-serif;border:1px solid #FF6719;color:#FF6719;background:transparent;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.background='#FF6719';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#FF6719'">or Subscribe</button>
+          </div>
+          <p id="sub-msg" style="display:none;font-size:13px;letter-spacing:0.04em;color:var(--ink-mid);"></p>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -436,6 +445,41 @@ async function loadSubstackPosts() {
 }
 
 loadSubstackPosts();
+
+
+// Substack direct subscribe
+function subscribeSubstack() {
+  var email = document.getElementById('sub-email').value.trim();
+  var msg = document.getElementById('sub-msg');
+  if (!email || !email.includes('@')) {
+    msg.textContent = 'Please enter a valid email address.';
+    msg.style.color = 'var(--rose)';
+    msg.style.display = 'block';
+    return;
+  }
+  fetch('https://professionalturista.substack.com/api/v1/free', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({email: email, first_url: 'https://professionalturista.netlify.app', referral_code: null})
+  })
+  .then(function(res) {
+    if (res.ok || res.status === 200) {
+      msg.textContent = 'Almost there! Check your inbox to confirm your subscription ✨';
+      msg.style.color = '#FF6719';
+    } else {
+      throw new Error('failed');
+    }
+    msg.style.display = 'block';
+    document.getElementById('sub-email').value = '';
+  })
+  .catch(function() {
+    // Fallback: redirect to Substack subscribe page
+    window.open('https://professionalturista.substack.com/subscribe?email=' + encodeURIComponent(email), '_blank');
+    msg.textContent = 'Redirecting to Substack to confirm…';
+    msg.style.color = 'var(--ink-mid)';
+    msg.style.display = 'block';
+  });
+}
 
 // Netlify Form submission handler
 var form = document.getElementById('contact-form');
