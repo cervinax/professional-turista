@@ -396,9 +396,9 @@ function renderError() {
 
 async function loadSubstackPosts() {
   try {
-    // Substack internal API — works on Netlify (no CORS restriction)
-    var res = await fetch('https://professionalturista.substack.com/api/v1/posts?limit=5&offset=0');
-    if (!res.ok) throw new Error('Substack API ' + res.status);
+    // Call our Netlify serverless function — runs server-side, no CORS issue
+    var res = await fetch('/.netlify/functions/substack');
+    if (!res.ok) throw new Error('Netlify function ' + res.status);
     var posts = await res.json();
     if (!posts || !posts.length) throw new Error('no posts');
 
