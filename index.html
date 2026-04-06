@@ -15,9 +15,9 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 :root{
-  --rose:#b94a6a;
-  --rose-light:#d4788e;
-  --rose-pale:#f0d4dc;
+  --rose:#b8415d;
+  --rose-light:#cc6678;
+  --rose-pale:#f0d0d6;
   --cream:#f5f2ed;
   --cream-dark:#ede8e1;
   --warm-white:#faf8f5;
@@ -147,9 +147,64 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 .footer-copy{font-size:11px;color:#3a3330;}
 .footer-back{font-size:11px;letter-spacing:0.1em;color:#3a3330;text-transform:uppercase;text-decoration:none;transition:color 0.2s;}
 .footer-back:hover{color:var(--rose-light);}
+
+/* ── Custom cursor ── */
+*, *::before, *::after { cursor: none !important; }
+.cursor {
+  position: fixed;
+  top: 0; left: 0;
+  width: 12px; height: 12px;
+  background: #b8415d;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s ease, height 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+  mix-blend-mode: multiply;
+}
+.cursor.hover {
+  width: 40px; height: 40px;
+  background: #b8415d;
+  opacity: 0.35;
+}
+.cursor-follower {
+  position: fixed;
+  top: 0; left: 0;
+  width: 36px; height: 36px;
+  border: 1px solid #b8415d;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.12s ease, width 0.25s ease, height 0.25s ease, opacity 0.2s ease;
+  opacity: 0.5;
+}
+.cursor-follower.hover {
+  width: 64px; height: 64px;
+  opacity: 0.2;
+}
+
+/* ── Scroll animations ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+.reveal-delay-5 { transition-delay: 0.5s; }
 </style>
 </head>
 <body>
+
+<div class="cursor"></div>
+<div class="cursor-follower"></div>
 
 <nav>
   <div class="nav-logo"><img src="images/logo.png" alt="Professional Turista" /></div>
@@ -173,7 +228,7 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
   <p class="hero-scroll">Scroll</p>
 </section>
 
-<section class="section" id="about">
+<section class="section reveal" id="about">
   <p class="section-label">Get to know me</p>
   <div class="about-grid">
     <div class="about-photo-wrap">
@@ -181,23 +236,26 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
       <img class="about-photo" src="images/sophie-photo.jpg" alt="Sophie, Professional Turista" />
     </div>
     <div>
-      <h2>A Canadian in <em>Paris,</em><br>always a tourist<br>at heart</h2>
-      <p>A Canadian in Paris inspired by the beauty of the world&rsquo;s people, places, and cultures &mdash; with a passion for uncovering hidden gems in Paris &amp; beyond.</p>
-      <p>Through Professional Turista, I share travel guides, city favourites, luxury experiences, and the little moments that make life feel like an adventure &mdash; whether I&rsquo;m wandering a new neighbourhood in Paris or jetting off somewhere new.</p>
-      <p class="about-sig">xo Sophie</p>
+      <a href="https://professionalturista.substack.com/p/welcome" target="_blank" style="text-decoration:none;color:inherit;display:block;">
+        <h2>A Canadian in <em>Paris,</em><br>always a tourist<br>at heart</h2>
+        <p style="color:var(--ink-mid);font-size:16px;font-weight:300;margin-bottom:1.2rem;line-height:1.8;">Hey there, welcome! I&rsquo;m a 27 year old Canadian living and working in Paris. I spent my childhood growing up in Vancouver &mdash; surrounded by all things nature. For the past 10 years, I&rsquo;ve been living abroad in New York, Shanghai, London, Milan, and now Paris.</p>
+        <p style="color:var(--ink-mid);font-size:16px;font-weight:300;margin-bottom:1.2rem;line-height:1.8;">I hope to help you find funky, cool places for your trips to Paris, in addition to unique travel spots around the world. There is nothing I love more than exploring the food, culture, fashion, cities and nature of different countries &mdash; 45 countries and counting!</p>
+        <p style="color:var(--rose);font-size:14px;font-weight:300;letter-spacing:0.05em;margin-bottom:1.2rem;">Continue reading &rarr;</p>
+        <p class="about-sig">xo Sophie</p>
+      </a>
       <a href="https://professionalturista.substack.com" target="_blank" class="btn btn-outline">Read the journal</a>
     </div>
   </div>
 </section>
 
-<section class="book-section" id="book">
+<section class="book-section reveal" id="book">
   <p class="section-label">Work with me</p>
   <h2>Let&rsquo;s <em>connect</em></h2>
   <p>Whether you want to collaborate, get travel advice, or just say hello &mdash; I&rsquo;d love to chat.</p>
   <a href="#" class="btn btn-solid">Book a call with me</a>
 </section>
 
-<section class="section-full" id="journal">
+<section class="section-full reveal" id="journal">
   <div class="section-full-inner">
     <p class="section-label">From the journal</p>
 
@@ -234,7 +292,7 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
   </div>
 </section>
 
-<section class="social-section" id="social">
+<section class="social-section reveal" id="social">
   <div class="social-row">
     <div class="ig-wrap">
       <div class="social-header">
@@ -242,12 +300,12 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
         <a href="https://instagram.com/professionalturista" target="_blank" class="social-follow">Follow &rarr;</a>
       </div>
       <div class="ig-grid">
-        <a class="ig-cell" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-1-milano-cortina.jpg" alt="Milano Cortina 2026" /></a>
-        <a class="ig-cell" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-2-guadeloupe.jpg" alt="Guadeloupe" /></a>
-        <a class="ig-cell" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-3-design-museum.jpg" alt="Design museum" /></a>
-        <a class="ig-cell" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-4-cotswolds.jpg" alt="Cotswolds" /></a>
-        <a class="ig-cell" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-5-paris-seine.jpg" alt="Paris Seine" /></a>
-        <a class="ig-cell" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-6-louvre.jpg" alt="Louvre" /></a>
+        <a class="ig-cell reveal reveal-delay-1" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-1-milano-cortina.jpg" alt="Milano Cortina 2026" /></a>
+        <a class="ig-cell reveal reveal-delay-2" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-2-guadeloupe.jpg" alt="Guadeloupe" /></a>
+        <a class="ig-cell reveal reveal-delay-3" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-3-design-museum.jpg" alt="Design museum" /></a>
+        <a class="ig-cell reveal reveal-delay-1" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-4-cotswolds.jpg" alt="Cotswolds" /></a>
+        <a class="ig-cell reveal reveal-delay-2" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-5-paris-seine.jpg" alt="Paris Seine" /></a>
+        <a class="ig-cell reveal reveal-delay-3" href="https://instagram.com/professionalturista" target="_blank"><img src="images/ig-6-louvre.jpg" alt="Louvre" /></a>
       </div>
     </div>
     <div class="social-divider"></div>
@@ -259,7 +317,7 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
       <a class="tiktok-thumb" href="https://tiktok.com/@soph.nygren" target="_blank">
         <img src="images/tiktok-marais.jpg" alt="TikTok — Paris guide: le Marais" />
         <div class="tiktok-play"><div class="tiktok-play-btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="#b94a6a"><path d="M8 5v14l11-7z"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#b8415d"><path d="M8 5v14l11-7z"/></svg>
         </div></div>
       </a>
       <p class="tiktok-label">Watch on TikTok &rarr;</p>
@@ -267,7 +325,7 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
   </div>
 </section>
 
-<footer id="contact">
+<footer id="contact" class="reveal">
   <div class="footer-inner">
     <div class="footer-top">
       <div class="footer-brand">
@@ -480,6 +538,52 @@ function subscribeSubstack() {
     msg.style.display = 'block';
   });
 }
+
+// ── Custom cursor ──
+var cursor = document.querySelector('.cursor');
+var follower = document.querySelector('.cursor-follower');
+var mouseX = 0, mouseY = 0;
+var followerX = 0, followerY = 0;
+
+document.addEventListener('mousemove', function(e) {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  cursor.style.left = mouseX + 'px';
+  cursor.style.top = mouseY + 'px';
+});
+
+function animateFollower() {
+  followerX += (mouseX - followerX) * 0.12;
+  followerY += (mouseY - followerY) * 0.12;
+  follower.style.left = followerX + 'px';
+  follower.style.top = followerY + 'px';
+  requestAnimationFrame(animateFollower);
+}
+animateFollower();
+
+document.querySelectorAll('a, button, input, .post-card, .ig-cell, .featured-article, .tiktok-thumb').forEach(function(el) {
+  el.addEventListener('mouseenter', function() {
+    cursor.classList.add('hover');
+    follower.classList.add('hover');
+  });
+  el.addEventListener('mouseleave', function() {
+    cursor.classList.remove('hover');
+    follower.classList.remove('hover');
+  });
+});
+
+// ── Scroll reveal ──
+var revealObserver = new IntersectionObserver(function(entries) {
+  entries.forEach(function(entry) {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.reveal').forEach(function(el) {
+  revealObserver.observe(el);
+});
 
 // Netlify Form submission handler
 var form = document.getElementById('contact-form');
