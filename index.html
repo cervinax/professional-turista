@@ -10,6 +10,14 @@
 <meta property="og:title" content="Professional Turista" />
 <meta property="og:description" content="Your guide to exploring the world through the art of travel and the joy of being a tourist." />
 <meta property="og:image" content="images/sophie-photo.jpg" />
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-W2BZNKQ1Q9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-W2BZNKQ1Q9');
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -199,9 +207,88 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 .reveal-delay-3 { transition-delay: 0.3s; }
 .reveal-delay-4 { transition-delay: 0.4s; }
 .reveal-delay-5 { transition-delay: 0.5s; }
+
+/* ── Contact modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(28,21,16,0.6);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+.modal {
+  background: var(--warm-white);
+  padding: 3rem;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  transform: translateY(24px);
+  transition: transform 0.3s ease;
+  position: relative;
+}
+.modal-overlay.active .modal {
+  transform: translateY(0);
+}
+.modal-close {
+  position: absolute;
+  top: 1rem; right: 1.2rem;
+  font-size: 20px;
+  color: var(--ink-light);
+  cursor: none;
+  background: none;
+  border: none;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.modal-close:hover { color: var(--ink); }
+.modal-icon {
+  font-size: 32px;
+  margin-bottom: 1rem;
+}
+.modal h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 0.6rem;
+}
+.modal h3 em { font-style: italic; color: var(--rose); }
+.modal p {
+  font-size: 14px;
+  color: var(--ink-mid);
+  font-weight: 300;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+.modal-sig {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--rose);
+}
 </style>
 </head>
 <body>
+
+<div class="modal-overlay" id="contact-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-icon">✉️</div>
+    <h3>Message <em>received!</em></h3>
+    <p>Thank you for reaching out — I&rsquo;ll get back to you as soon as possible. In the meantime, feel free to explore the journal!</p>
+    <a href="#journal" onclick="closeModal()" class="btn btn-outline" style="font-size:11px;">Read the journal</a>
+    <p class="modal-sig" style="margin-top:1.5rem;">xo Sophie</p>
+  </div>
+</div>
 
 <div class="cursor"></div>
 <div class="cursor-follower"></div>
@@ -539,6 +626,22 @@ function subscribeSubstack() {
   });
 }
 
+// ── Modal ──
+function openModal() {
+  document.getElementById('contact-modal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('contact-modal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.getElementById('contact-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
 // ── Custom cursor ──
 var cursor = document.querySelector('.cursor');
 var follower = document.querySelector('.cursor-follower');
@@ -593,8 +696,8 @@ if (form) {
     var data = new FormData(form);
     fetch('/', { method: 'POST', body: data })
       .then(function() {
-        document.getElementById('form-success').style.display = 'block';
         form.reset();
+        openModal();
       })
       .catch(function() {
         alert('Something went wrong. Please try again.');
