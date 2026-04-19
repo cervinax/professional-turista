@@ -42,6 +42,13 @@ nav{position:sticky;top:0;z-index:100;background:rgba(250,248,245,0.97);border-b
 .nav-links{display:flex;gap:2.5rem;list-style:none;}
 .nav-links a{font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink-mid);text-decoration:none;transition:color 0.2s;}
 .nav-links a:hover{color:var(--rose);}
+.nav-hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;padding:4px;cursor:pointer;}
+.nav-hamburger span{display:block;width:22px;height:1.5px;background:var(--ink);transition:all 0.3s;}
+.nav-mobile{display:none;position:fixed;inset:0;background:var(--warm-white);z-index:99;flex-direction:column;align-items:center;justify-content:center;gap:2.5rem;}
+.nav-mobile.open{display:flex;}
+.nav-mobile a{font-size:13px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-mid);text-decoration:none;}
+.nav-mobile a:hover{color:var(--rose);}
+.nav-mobile-close{position:absolute;top:1.5rem;right:2rem;font-size:28px;background:none;border:none;color:var(--ink-mid);line-height:1;}
 
 .hero{min-height:92vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:4rem 2rem;background:var(--cream);position:relative;overflow:hidden;}
 .hero-bg{position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1600&q=80') center/cover no-repeat;opacity:0.07;}
@@ -156,124 +163,104 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 .footer-back{font-size:11px;letter-spacing:0.1em;color:#3a3330;text-transform:uppercase;text-decoration:none;transition:color 0.2s;}
 .footer-back:hover{color:var(--rose-light);}
 
-/* ── Custom cursor ── */
-*, *::before, *::after { cursor: none !important; }
-.cursor {
-  position: fixed;
-  top: 0; left: 0;
-  width: 12px; height: 12px;
-  background: #b8415d;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-  transition: width 0.2s ease, height 0.2s ease, background 0.2s ease, opacity 0.2s ease;
-  mix-blend-mode: multiply;
-}
-.cursor.hover {
-  width: 40px; height: 40px;
-  background: #b8415d;
-  opacity: 0.35;
-}
-.cursor-follower {
-  position: fixed;
-  top: 0; left: 0;
-  width: 36px; height: 36px;
-  border: 1px solid #b8415d;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9998;
-  transform: translate(-50%, -50%);
-  transition: transform 0.12s ease, width 0.25s ease, height 0.25s ease, opacity 0.2s ease;
-  opacity: 0.5;
-}
-.cursor-follower.hover {
-  width: 64px; height: 64px;
-  opacity: 0.2;
+/* Custom cursor — desktop only */
+@media (hover: hover) and (pointer: fine) {
+  *, *::before, *::after { cursor: none !important; }
+  .cursor{position:fixed;top:0;left:0;width:12px;height:12px;background:#b8415d;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width 0.2s ease,height 0.2s ease,opacity 0.2s ease;mix-blend-mode:multiply;}
+  .cursor.hover{width:40px;height:40px;opacity:0.35;}
+  .cursor-follower{position:fixed;top:0;left:0;width:36px;height:36px;border:1px solid #b8415d;border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width 0.25s ease,height 0.25s ease,opacity 0.2s ease;opacity:0.5;}
+  .cursor-follower.hover{width:64px;height:64px;opacity:0.2;}
 }
 
-/* ── Scroll animations ── */
-.reveal {
-  opacity: 0;
-  transform: translateY(32px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
-}
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-.reveal-delay-4 { transition-delay: 0.4s; }
-.reveal-delay-5 { transition-delay: 0.5s; }
+/* Scroll animations */
+.reveal{opacity:0;transform:translateY(32px);transition:opacity 0.7s ease,transform 0.7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+.reveal-delay-1{transition-delay:0.1s;}
+.reveal-delay-2{transition-delay:0.2s;}
+.reveal-delay-3{transition-delay:0.3s;}
 
-/* ── Contact modal ── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(28,21,16,0.6);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(28,21,16,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s ease;}
+.modal-overlay.active{opacity:1;pointer-events:all;}
+.modal{background:var(--warm-white);padding:3rem;max-width:420px;width:90%;text-align:center;transform:translateY(24px);transition:transform 0.3s ease;position:relative;}
+.modal-overlay.active .modal{transform:translateY(0);}
+.modal-close{position:absolute;top:1rem;right:1.2rem;font-size:20px;color:var(--ink-light);background:none;border:none;line-height:1;transition:color 0.2s;}
+.modal-close:hover{color:var(--ink);}
+.modal-icon{font-size:32px;margin-bottom:1rem;}
+.modal h3{font-family:'Playfair Display',serif;font-size:26px;font-weight:400;color:var(--ink);margin-bottom:0.6rem;}
+.modal h3 em{font-style:italic;color:var(--rose);}
+.modal p{font-size:14px;color:var(--ink-mid);font-weight:300;line-height:1.7;margin-bottom:1.5rem;}
+.modal-sig{font-family:'Playfair Display',serif;font-style:italic;font-size:18px;color:var(--rose);}
+
+/* ════════════════════════════════
+   RESPONSIVE MOBILE
+   ════════════════════════════════ */
+@media (max-width: 768px) {
+  /* Nav */
+  nav{padding:0 1.5rem;height:60px;}
+  .nav-logo img{height:38px;}
+  .nav-links{display:none;}
+  .nav-hamburger{display:flex;}
+
+  /* Hero */
+  .hero{min-height:85vh;padding:3rem 1.5rem;}
+  .hero h1{font-size:48px;}
+  .hero-sub{font-size:15px;}
+  .hero-scroll{display:none;}
+
+  /* Sections */
+  .section{padding:4rem 1.5rem;}
+  .section-full{padding:4rem 1.5rem;}
+  .section-label{margin-bottom:2rem;}
+
+  /* About */
+  .about-grid{grid-template-columns:1fr;gap:2.5rem;}
+  .about-photo-wrap{max-width:260px;margin:0 auto;}
+  .about-photo-accent{display:none;}
+  .about h2{font-size:30px;text-align:center;}
+  .about-sig{text-align:center;}
+
+  /* Book */
+  .book-section{padding:4rem 1.5rem;}
+  .book-section h2{font-size:34px;}
+
+  /* Featured */
+  .featured-article{grid-template-columns:1fr;}
+  .featured-img{height:220px;}
+  .featured-body{padding:1.5rem;}
+  .featured-title{font-size:22px;}
+
+  /* Posts — 1 column */
+  .posts-grid{grid-template-columns:1fr;gap:1rem;}
+
+  /* Subscribe form */
+  .sub-row{flex-direction:column;}
+
+  /* Social — stack */
+  .social-section{padding:4rem 1.5rem;}
+  .social-row{flex-direction:column;gap:3rem;}
+  .social-divider{display:none;}
+  .ig-wrap{width:100%;}
+  .tt-wrap{width:100%;max-width:260px;margin:0 auto;}
+
+  /* Footer */
+  footer{padding:3rem 1.5rem 2rem;}
+  .footer-top{grid-template-columns:1fr;gap:2.5rem;}
+  .footer-socials{flex-wrap:wrap;}
+  .contact-form{flex-direction:column;gap:8px;}
+  .contact-form input{border-right:1px solid #3a3330;}
+  .footer-bottom{flex-direction:column;gap:0.8rem;text-align:center;}
+
+  /* Modal */
+  .modal{padding:2rem 1.5rem;}
+  .modal h3{font-size:22px;}
 }
-.modal-overlay.active {
-  opacity: 1;
-  pointer-events: all;
-}
-.modal {
-  background: var(--warm-white);
-  padding: 3rem;
-  max-width: 420px;
-  width: 90%;
-  text-align: center;
-  transform: translateY(24px);
-  transition: transform 0.3s ease;
-  position: relative;
-}
-.modal-overlay.active .modal {
-  transform: translateY(0);
-}
-.modal-close {
-  position: absolute;
-  top: 1rem; right: 1.2rem;
-  font-size: 20px;
-  color: var(--ink-light);
-  cursor: none;
-  background: none;
-  border: none;
-  line-height: 1;
-  transition: color 0.2s;
-}
-.modal-close:hover { color: var(--ink); }
-.modal-icon {
-  font-size: 32px;
-  margin-bottom: 1rem;
-}
-.modal h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--ink);
-  margin-bottom: 0.6rem;
-}
-.modal h3 em { font-style: italic; color: var(--rose); }
-.modal p {
-  font-size: 14px;
-  color: var(--ink-mid);
-  font-weight: 300;
-  line-height: 1.7;
-  margin-bottom: 1.5rem;
-}
-.modal-sig {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 18px;
-  color: var(--rose);
+
+@media (max-width: 480px) {
+  .hero h1{font-size:36px;}
+  .book-section h2{font-size:28px;}
+  .featured-title{font-size:19px;}
+  .about h2{font-size:26px;}
 }
 </style>
 </head>
@@ -282,9 +269,9 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 <div class="modal-overlay" id="contact-modal">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">&times;</button>
-    <div class="modal-icon">✉️</div>
+    <div class="modal-icon">&#9993;&#65039;</div>
     <h3>Message <em>received!</em></h3>
-    <p>Thank you for reaching out — I&rsquo;ll get back to you as soon as possible. In the meantime, feel free to explore the journal!</p>
+    <p>Thank you for reaching out &mdash; I&rsquo;ll get back to you as soon as possible. In the meantime, feel free to explore the journal!</p>
     <a href="#journal" onclick="closeModal()" class="btn btn-outline" style="font-size:11px;">Read the journal</a>
     <p class="modal-sig" style="margin-top:1.5rem;">xo Sophie</p>
   </div>
@@ -292,6 +279,15 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 
 <div class="cursor"></div>
 <div class="cursor-follower"></div>
+
+<div class="nav-mobile" id="nav-mobile">
+  <button class="nav-mobile-close" onclick="closeMobileNav()">&times;</button>
+  <a href="#about" onclick="closeMobileNav()">About</a>
+  <a href="#journal" onclick="closeMobileNav()">Journal</a>
+  <a href="#social" onclick="closeMobileNav()">Instagram</a>
+  <a href="#book" onclick="closeMobileNav()">Book a call</a>
+  <a href="#contact" onclick="closeMobileNav()">Contact</a>
+</div>
 
 <nav>
   <div class="nav-logo"><img src="images/logo.png" alt="Professional Turista" /></div>
@@ -302,6 +298,9 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
     <li><a href="#book">Book a call</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
+  <button class="nav-hamburger" onclick="openMobileNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
 
 <section class="hero">
@@ -345,11 +344,8 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 <section class="section-full reveal" id="journal">
   <div class="section-full-inner">
     <p class="section-label">From the journal</p>
-
     <a id="featured-link" class="featured-article" href="https://professionalturista.substack.com" target="_blank">
-      <div class="featured-img">
-        <img id="featured-img" src="" alt="Latest post" />
-      </div>
+      <div class="featured-img"><img id="featured-img" src="" alt="Latest post" /></div>
       <div class="featured-body">
         <p class="featured-tag">Latest post</p>
         <p class="featured-title" id="featured-title">Loading&hellip;</p>
@@ -359,18 +355,16 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
         <span class="featured-read">Read the full post</span>
       </div>
     </a>
-
     <div id="posts-container" class="posts-grid">
       <div class="posts-loading">Loading latest posts&hellip;</div>
     </div>
-
     <div style="text-align:center;margin-top:3rem;">
       <a href="https://professionalturista.substack.com" target="_blank" class="btn btn-dark">View all posts on Substack</a>
       <div style="margin-top:1rem;">
         <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
           <div style="display:flex;align-items:center;gap:12px;max-width:420px;width:100%;">
-            <input type="email" id="sub-email" placeholder="your@email.com" style="flex:1;padding:13px 16px;border:1px solid var(--border);font-family:'Jost',sans-serif;font-size:13px;outline:none;color:var(--ink);background:white;" />
-            <button onclick="subscribeSubstack()" style="padding:13px 28px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;font-family:'Jost',sans-serif;border:1px solid #FF6719;color:#FF6719;background:transparent;cursor:pointer;white-space:nowrap;transition:all 0.2s;" onmouseover="this.style.background='#FF6719';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#FF6719'">or Subscribe</button>
+            <input type="email" id="sub-email" placeholder="your@email.com" style="flex:1;padding:13px 16px;border:1px solid var(--border);font-family:'Jost',sans-serif;font-size:13px;outline:none;color:var(--ink);background:white;min-width:0;" />
+            <button onclick="subscribeSubstack()" style="padding:13px 20px;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;font-family:'Jost',sans-serif;border:1px solid #FF6719;color:#FF6719;background:transparent;cursor:pointer;white-space:nowrap;transition:all 0.2s;flex-shrink:0;" onmouseover="this.style.background='#FF6719';this.style.color='white'" onmouseout="this.style.background='transparent';this.style.color='#FF6719'">or Subscribe</button>
           </div>
           <p id="sub-msg" style="display:none;font-size:13px;letter-spacing:0.04em;color:var(--ink-mid);"></p>
         </div>
@@ -437,7 +431,7 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
           <div style="margin-top:8px;">
             <input type="text" name="message" placeholder="Your message..." style="width:100%;padding:12px 16px;background:#2a2320;border:1px solid #3a3330;color:var(--warm-white);font-family:'Jost',sans-serif;font-size:13px;outline:none;" />
           </div>
-          <p id="form-success" style="display:none;color:var(--rose-light);font-size:13px;margin-top:8px;letter-spacing:0.05em;">Message sent — thank you!</p>
+          <p id="form-success" style="display:none;color:var(--rose-light);font-size:13px;margin-top:8px;letter-spacing:0.05em;">Message sent &mdash; thank you!</p>
         </form>
       </div>
     </div>
@@ -449,261 +443,32 @@ footer{background:var(--ink);padding:5rem 3rem 3rem;}
 </footer>
 
 <script>
-function stripHtml(html) {
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
-}
+function stripHtml(html){const tmp=document.createElement('div');tmp.innerHTML=html;return tmp.textContent||tmp.innerText||'';}
+function isDecorative(src){if(!src)return true;const skipFiles=['c0d17ae6-ab2b-49ab-b92e-fd0ee9d33973','72816ac0-e1d8-42db-9d8e-8094ca7f083f'];const skipPatterns=['1450x140','w_40,h_40','w_36,h_36','w_32,h_32','w_88,h_88','c_fill','avatars'];if(skipFiles.some(function(s){return src.includes(s);}))return true;if(skipPatterns.some(function(s){return src.includes(s);}))return true;var dimMatch=src.match(/_([0-9]+)x([0-9]+)\./);if(dimMatch&&parseInt(dimMatch[1])/parseInt(dimMatch[2])>3)return true;return false;}
+function extractImage(item){if(item.thumbnail&&!isDecorative(item.thumbnail))return item.thumbnail;if(item.enclosure&&item.enclosure.link&&!isDecorative(item.enclosure.link))return item.enclosure.link;var fields=['content','description'];for(var f=0;f<fields.length;f++){if(item[fields[f]]){var tmp=document.createElement('div');tmp.innerHTML=item[fields[f]];var imgs=tmp.querySelectorAll('img');for(var i=0;i<imgs.length;i++){if(imgs[i].src&&!isDecorative(imgs[i].src))return imgs[i].src;}var matches=item[fields[f]].match(/src="(https?:\/\/[^"]+)"/g);if(matches){for(var m=0;m<matches.length;m++){var url=matches[m].replace(/src="|"/g,'');if(!isDecorative(url))return url;}}}}return '';}
+function renderFeatured(title,subtitle,date,excerpt,url,img){var el=document.getElementById('featured-img');if(img){el.src=img;el.onerror=function(){el.style.display='none';};}else{el.style.display='none';}document.getElementById('featured-link').href=url;document.getElementById('featured-title').textContent=title;document.getElementById('featured-subtitle').textContent=subtitle;document.getElementById('featured-date').textContent=date;document.getElementById('featured-excerpt').textContent=excerpt;}
+function renderCards(items){var container=document.getElementById('posts-container');container.innerHTML=items.map(function(item){var src=extractImage(item);var date=new Date(item.pubDate).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});return '<a class="post-card" href="'+item.link+'" target="_blank"><div class="post-thumb">'+(src?'<img src="'+src+'" alt="'+item.title+'" onerror="this.style.display=\'none\'" />':'<div class="post-thumb-placeholder">Professional Turista</div>')+'</div><div class="post-body"><p class="post-tag">Professional Turista</p><p class="post-title">'+item.title+'</p><p class="post-date">'+date+'</p><p class="post-read">Read</p></div></a>';}).join('');}
+function renderError(){document.getElementById('featured-link').href='https://professionalturista.substack.com/p/january-luxury-around-the-world-roundup';document.getElementById('featured-title').textContent='January \u201cLuxury Around the World\u201d Roundup';document.getElementById('featured-subtitle').textContent='January 2026: What\u2019s happening at the crossroads of travel and luxury?';document.getElementById('featured-date').textContent='4 February 2026';document.getElementById('featured-excerpt').textContent='In this first edition of a new monthly series bringing together two of my favourite worlds, travel and luxury, I am hoping to shine a bit of light on some of the coolest experiences taking place in all different corners of our world\u2026';var el=document.getElementById('featured-img');el.src='https://substackcdn.com/image/fetch/w_800,c_limit,f_auto,q_auto:good/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F9c54823c-c85c-46f4-9483-1ad8dc873688_3024x2190.jpeg';el.style.display='';document.getElementById('posts-container').innerHTML='<a class="post-card" href="https://professionalturista.substack.com/p/the-joy-of-being-a-tourist-in-your" target="_blank"><div class="post-thumb"><img src="https://substackcdn.com/image/fetch/w_600,c_limit,f_auto,q_auto:good/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff8b6e078-321f-4dcf-8132-9d9eaaf8bffc_3024x3104.jpeg" alt="" /></div><div class="post-body"><p class="post-tag">Paris Life</p><p class="post-title">The Joy of Being a Tourist in Your Own City</p><p class="post-date">15 September 2025</p><p class="post-read">Read</p></div></a><a class="post-card" href="https://professionalturista.substack.com/p/summer-escapes-5-waterside-getaways" target="_blank"><div class="post-thumb"><img src="images/ig-lake-como.jpg" alt="" /></div><div class="post-body"><p class="post-tag">City Guide</p><p class="post-title">Summer Escapes: 5 Waterside Getaways from Milan</p><p class="post-date">17 March 2025</p><p class="post-read">Read</p></div></a><a class="post-card" href="https://professionalturista.substack.com/p/a-few-current-favourites-toronto" target="_blank"><div class="post-thumb"><img src="images/ig-toronto.jpg" alt="" /></div><div class="post-body"><p class="post-tag">City Guide</p><p class="post-title">A Few Current Favourites: Toronto Edition</p><p class="post-date">24 March 2025</p><p class="post-read">Read</p></div></a>';}
 
-function formatDate(dateStr) {
-  return new Date(dateStr).toLocaleDateString('en-GB', {day:'numeric', month:'long', year:'numeric'});
-}
-
-function isDecorative(src) {
-  if (!src) return true;
-  const skipFiles = [
-    'c0d17ae6-ab2b-49ab-b92e-fd0ee9d33973',
-    '72816ac0-e1d8-42db-9d8e-8094ca7f083f',
-  ];
-  const skipPatterns = ['1450x140','w_40,h_40','w_36,h_36','w_32,h_32','w_88,h_88','c_fill','avatars'];
-  if (skipFiles.some(function(s){return src.includes(s);})) return true;
-  if (skipPatterns.some(function(s){return src.includes(s);})) return true;
-  var dimMatch = src.match(/_([0-9]+)x([0-9]+)\./);
-  if (dimMatch && parseInt(dimMatch[1]) / parseInt(dimMatch[2]) > 3) return true;
-  return false;
-}
-
-function extractImage(item) {
-  if (item.thumbnail && !isDecorative(item.thumbnail)) return item.thumbnail;
-  if (item.enclosure && item.enclosure.link && !isDecorative(item.enclosure.link)) return item.enclosure.link;
-  var fields = ['content', 'description'];
-  for (var f = 0; f < fields.length; f++) {
-    if (item[fields[f]]) {
-      var tmp = document.createElement('div');
-      tmp.innerHTML = item[fields[f]];
-      var imgs = tmp.querySelectorAll('img');
-      for (var i = 0; i < imgs.length; i++) {
-        if (imgs[i].src && !isDecorative(imgs[i].src)) return imgs[i].src;
-      }
-      var matches = item[fields[f]].match(/src="(https?:\/\/[^"]+)"/g);
-      if (matches) {
-        for (var m = 0; m < matches.length; m++) {
-          var url = matches[m].replace(/src="|"/g,'');
-          if (!isDecorative(url)) return url;
-        }
-      }
-    }
-  }
-  return '';
-}
-
-function renderFeatured(title, subtitle, date, excerpt, url, img) {
-  var featuredImgEl = document.getElementById('featured-img');
-  if (img) {
-    featuredImgEl.src = img;
-    featuredImgEl.onerror = function() { featuredImgEl.style.display = 'none'; };
-  } else {
-    featuredImgEl.style.display = 'none';
-  }
-  document.getElementById('featured-link').href = url;
-  document.getElementById('featured-title').textContent = title;
-  document.getElementById('featured-subtitle').textContent = subtitle;
-  document.getElementById('featured-date').textContent = date;
-  document.getElementById('featured-excerpt').textContent = excerpt;
-}
-
-function renderCards(items) {
-  var container = document.getElementById('posts-container');
-  container.innerHTML = items.map(function(item) {
-    var src = extractImage(item);
-    var date = new Date(item.pubDate).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
-    return '<a class="post-card" href="' + item.link + '" target="_blank">' +
-      '<div class="post-thumb">' + (src
-        ? '<img src="' + src + '" alt="' + item.title + '" onerror="this.style.display=\'none\'" />'
-        : '<div class="post-thumb-placeholder">Professional Turista</div>'
-      ) + '</div>' +
-      '<div class="post-body">' +
-        '<p class="post-tag">Professional Turista</p>' +
-        '<p class="post-title">' + item.title + '</p>' +
-        '<p class="post-date">' + date + '</p>' +
-        '<p class="post-read">Read</p>' +
-      '</div></a>';
-  }).join('');
-}
-
-function renderError() {
-  // Fallback with known articles so the page always has content
-  document.getElementById('featured-link').href = 'https://professionalturista.substack.com/p/january-luxury-around-the-world-roundup';
-  document.getElementById('featured-title').textContent = 'January \u201cLuxury Around the World\u201d Roundup';
-  document.getElementById('featured-subtitle').textContent = 'January 2026: What\u2019s happening at the crossroads of travel and luxury?';
-  document.getElementById('featured-date').textContent = '4 February 2026';
-  document.getElementById('featured-excerpt').textContent = 'In this first edition of a new monthly series bringing together two of my favourite worlds, travel and luxury, I am hoping to shine a bit of light on some of the coolest experiences taking place in all different corners of our world\u2026';
-  var featuredImgEl = document.getElementById('featured-img');
-  featuredImgEl.src = 'https://substackcdn.com/image/fetch/w_800,c_limit,f_auto,q_auto:good/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F9c54823c-c85c-46f4-9483-1ad8dc873688_3024x2190.jpeg';
-  featuredImgEl.style.display = '';
-
-  document.getElementById('posts-container').innerHTML =
-    '<a class="post-card" href="https://professionalturista.substack.com/p/the-joy-of-being-a-tourist-in-your" target="_blank">' +
-      '<div class="post-thumb"><img src="https://substackcdn.com/image/fetch/w_600,c_limit,f_auto,q_auto:good/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2Ff8b6e078-321f-4dcf-8132-9d9eaaf8bffc_3024x3104.jpeg" alt="The Joy of Being a Tourist" /></div>' +
-      '<div class="post-body"><p class="post-tag">Paris Life</p><p class="post-title">The Joy of Being a Tourist in Your Own City</p><p class="post-date">15 September 2025</p><p class="post-read">Read</p></div>' +
-    '</a>' +
-    '<a class="post-card" href="https://professionalturista.substack.com/p/summer-escapes-5-waterside-getaways" target="_blank">' +
-      '<div class="post-thumb"><img src="images/ig-lake-como.jpg" alt="Summer Escapes from Milan" /></div>' +
-      '<div class="post-body"><p class="post-tag">City Guide</p><p class="post-title">Summer Escapes: 5 Waterside Getaways from Milan</p><p class="post-date">17 March 2025</p><p class="post-read">Read</p></div>' +
-    '</a>' +
-    '<a class="post-card" href="https://professionalturista.substack.com/p/a-few-current-favourites-toronto" target="_blank">' +
-      '<div class="post-thumb"><img src="images/ig-toronto.jpg" alt="Toronto Favourites" /></div>' +
-      '<div class="post-body"><p class="post-tag">City Guide</p><p class="post-title">A Few Current Favourites: Toronto Edition</p><p class="post-date">24 March 2025</p><p class="post-read">Read</p></div>' +
-    '</a>';
-}
-
-async function loadSubstackPosts() {
-  try {
-    // Call our Netlify serverless function — runs server-side, no CORS issue
-    var res = await fetch('/.netlify/functions/substack');
-    if (!res.ok) throw new Error('Netlify function ' + res.status);
-    var posts = await res.json();
-    if (!posts || !posts.length) throw new Error('no posts');
-
-    var first = posts[0];
-    var img = first.cover_image || '';
-    var date = new Date(first.post_date).toLocaleDateString('en-GB', {day:'numeric',month:'long',year:'numeric'});
-    var excerpt = stripHtml(first.truncated_body_text || first.subtitle || '').slice(0,300) + '...';
-    var url = first.canonical_url || 'https://professionalturista.substack.com/p/' + first.slug;
-    renderFeatured(first.title, first.subtitle || '', date, excerpt, url, img);
-
-    var cards = posts.slice(1,4).map(function(post) {
-      return {
-        title: post.title,
-        link: post.canonical_url || 'https://professionalturista.substack.com/p/' + post.slug,
-        pubDate: post.post_date,
-        cover_image: post.cover_image || '',
-        thumbnail: post.cover_image || ''
-      };
-    });
-    renderCards(cards);
-
-  } catch(e) {
-    console.warn('Substack API failed:', e.message);
-    renderError();
-  }
-}
-
+async function loadSubstackPosts(){try{var res=await fetch('/.netlify/functions/substack');if(!res.ok)throw new Error('fn '+res.status);var posts=await res.json();if(!posts||!posts.length)throw new Error('empty');var first=posts[0];var img=first.cover_image||'';var date=new Date(first.post_date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});var excerpt=stripHtml(first.truncated_body_text||first.subtitle||'').slice(0,300)+'...';var url=first.canonical_url||'https://professionalturista.substack.com/p/'+first.slug;renderFeatured(first.title,first.subtitle||'',date,excerpt,url,img);var cards=posts.slice(1,4).map(function(post){return{title:post.title,link:post.canonical_url||'https://professionalturista.substack.com/p/'+post.slug,pubDate:post.post_date,thumbnail:post.cover_image||''};});renderCards(cards);}catch(e){console.warn('Substack:',e.message);renderError();}}
 loadSubstackPosts();
 
+function subscribeSubstack(){var email=document.getElementById('sub-email').value.trim();var msg=document.getElementById('sub-msg');if(!email||!email.includes('@')){msg.textContent='Please enter a valid email address.';msg.style.color='var(--rose)';msg.style.display='block';return;}fetch('https://professionalturista.substack.com/api/v1/free',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,first_url:'https://professionalturista.netlify.app',referral_code:null})}).then(function(res){if(res.ok||res.status===200){msg.textContent='Almost there! Check your inbox to confirm \u2728';msg.style.color='#FF6719';}else{throw new Error('failed');}msg.style.display='block';document.getElementById('sub-email').value='';}).catch(function(){window.open('https://professionalturista.substack.com/subscribe?email='+encodeURIComponent(email),'_blank');msg.textContent='Redirecting to Substack\u2026';msg.style.color='var(--ink-mid)';msg.style.display='block';});}
 
-// Substack direct subscribe
-function subscribeSubstack() {
-  var email = document.getElementById('sub-email').value.trim();
-  var msg = document.getElementById('sub-msg');
-  if (!email || !email.includes('@')) {
-    msg.textContent = 'Please enter a valid email address.';
-    msg.style.color = 'var(--rose)';
-    msg.style.display = 'block';
-    return;
-  }
-  fetch('https://professionalturista.substack.com/api/v1/free', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({email: email, first_url: 'https://professionalturista.netlify.app', referral_code: null})
-  })
-  .then(function(res) {
-    if (res.ok || res.status === 200) {
-      msg.textContent = 'Almost there! Check your inbox to confirm your subscription ✨';
-      msg.style.color = '#FF6719';
-    } else {
-      throw new Error('failed');
-    }
-    msg.style.display = 'block';
-    document.getElementById('sub-email').value = '';
-  })
-  .catch(function() {
-    // Fallback: redirect to Substack subscribe page
-    window.open('https://professionalturista.substack.com/subscribe?email=' + encodeURIComponent(email), '_blank');
-    msg.textContent = 'Redirecting to Substack to confirm…';
-    msg.style.color = 'var(--ink-mid)';
-    msg.style.display = 'block';
-  });
-}
+function openMobileNav(){document.getElementById('nav-mobile').classList.add('open');document.body.style.overflow='hidden';}
+function closeMobileNav(){document.getElementById('nav-mobile').classList.remove('open');document.body.style.overflow='';}
+function openModal(){document.getElementById('contact-modal').classList.add('active');document.body.style.overflow='hidden';}
+function closeModal(){document.getElementById('contact-modal').classList.remove('active');document.body.style.overflow='';}
+document.getElementById('contact-modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeMobileNav();}});
 
-// ── Modal ──
-function openModal() {
-  document.getElementById('contact-modal').classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-function closeModal() {
-  document.getElementById('contact-modal').classList.remove('active');
-  document.body.style.overflow = '';
-}
-document.getElementById('contact-modal').addEventListener('click', function(e) {
-  if (e.target === this) closeModal();
-});
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeModal();
-});
+if(window.matchMedia('(hover: hover) and (pointer: fine)').matches){var cursor=document.querySelector('.cursor');var follower=document.querySelector('.cursor-follower');var mouseX=0,mouseY=0,followerX=0,followerY=0;document.addEventListener('mousemove',function(e){mouseX=e.clientX;mouseY=e.clientY;cursor.style.left=mouseX+'px';cursor.style.top=mouseY+'px';});function animateFollower(){followerX+=(mouseX-followerX)*0.12;followerY+=(mouseY-followerY)*0.12;follower.style.left=followerX+'px';follower.style.top=followerY+'px';requestAnimationFrame(animateFollower);}animateFollower();document.querySelectorAll('a,button,input,.post-card,.ig-cell,.featured-article,.tiktok-thumb').forEach(function(el){el.addEventListener('mouseenter',function(){cursor.classList.add('hover');follower.classList.add('hover');});el.addEventListener('mouseleave',function(){cursor.classList.remove('hover');follower.classList.remove('hover');});});}
 
-// ── Custom cursor ──
-var cursor = document.querySelector('.cursor');
-var follower = document.querySelector('.cursor-follower');
-var mouseX = 0, mouseY = 0;
-var followerX = 0, followerY = 0;
+var revealObserver=new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting)entry.target.classList.add('visible');});},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(function(el){revealObserver.observe(el);});
 
-document.addEventListener('mousemove', function(e) {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  cursor.style.left = mouseX + 'px';
-  cursor.style.top = mouseY + 'px';
-});
-
-function animateFollower() {
-  followerX += (mouseX - followerX) * 0.12;
-  followerY += (mouseY - followerY) * 0.12;
-  follower.style.left = followerX + 'px';
-  follower.style.top = followerY + 'px';
-  requestAnimationFrame(animateFollower);
-}
-animateFollower();
-
-document.querySelectorAll('a, button, input, .post-card, .ig-cell, .featured-article, .tiktok-thumb').forEach(function(el) {
-  el.addEventListener('mouseenter', function() {
-    cursor.classList.add('hover');
-    follower.classList.add('hover');
-  });
-  el.addEventListener('mouseleave', function() {
-    cursor.classList.remove('hover');
-    follower.classList.remove('hover');
-  });
-});
-
-// ── Scroll reveal ──
-var revealObserver = new IntersectionObserver(function(entries) {
-  entries.forEach(function(entry) {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
-  });
-}, { threshold: 0.1 });
-
-document.querySelectorAll('.reveal').forEach(function(el) {
-  revealObserver.observe(el);
-});
-
-// Netlify Form submission handler
-var form = document.getElementById('contact-form');
-if (form) {
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    var data = new FormData(form);
-    fetch('/', { method: 'POST', body: data })
-      .then(function() {
-        form.reset();
-        openModal();
-      })
-      .catch(function() {
-        alert('Something went wrong. Please try again.');
-      });
-  });
-}
+var form=document.getElementById('contact-form');
+if(form){form.addEventListener('submit',function(e){e.preventDefault();var data=new FormData(form);fetch('/',{method:'POST',body:data}).then(function(){form.reset();openModal();}).catch(function(){alert('Something went wrong. Please try again.');});});}
 </script>
 </body>
 </html>
